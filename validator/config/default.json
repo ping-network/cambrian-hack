@@ -1,0 +1,21 @@
+{
+    "server": {
+        "host": "0.0.0.0",
+        "port": 8080,
+        "log_level": "info"
+    },
+    "solana": {
+        "rpc_url": "https://api.devnet.solana.com",
+        "ws_url": "wss://api.devnet.solana.com",
+        "voter_key": "",
+        "operator_key": ""
+    },
+    "validator": {
+        "name": "Ping Validator",
+        "version": "0.1.0",
+        "operator_address": "DFTHqW9Mf2ATCbSVKNtFdr1QhZRX4KmEPHfZgzsDdPkm",
+        "voter_address": "36q1ncLzbBGD1YUKGEHY4GUy74p4rYZuq9KGxcYQqW4Y",
+        "vault_ticket": "C7Gm8vETLnD3EUmop24sLariNsxAdFXCLMhpMuUT79RH",
+        "delegation": "5avZvL4tjTJVjz4KcHLJayVEBKJ2TEjEMzyqvteFRxkz"
+    }
+}

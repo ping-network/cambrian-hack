@@ -1,0 +1,33 @@
+services:
+  camb-avs:
+    image: ghcr.io/cambrianone/camb-avs:${IMAGE_TAG:-latest}
+    restart: always
+    ports:
+      - '${AVS_PORT:-3000}:3000'
+      - '${AVS_WS_PORT:-3001}:3001'
+    healthcheck:
+      test: curl --fail http://localhost:3000/status || exit 1
+      interval: 2s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+    environment:
+      LOG_LEVEL: '${LOG_LEVEL}'
+      ADMIN_KEY: '${ADMIN_KEY}'
+      VAULT_PUBLIC_KEY: '${VAULT_PUBLIC_KEY:-5RZqs2PJRqdyqFc6vpykNCJP3M1yJYtHnmFChRpdM2iN}'
+      NCN_PUBLIC_KEY: '${NCN_PUBLIC_KEY:-2pS3w59nrwCj71wArhjsGP5rUff61rUbeGQiimNJfQGP}'
+      POA_NAME: '${POA_NAME:-ping.poa}'
+      API_URL: '${API_URL:-https://api.devnet.solana.com}'
+      API_WS_URL: '${API_WS_URL:-wss://api.devnet.solana.com}'
+      STAKE_THRESHOLD: '${STAKE_THRESHOLD:-1000}'
+      PROPOSAL_STORAGE_KEY: '${PROPOSAL_STORAGE_KEY:-ping.storage}'
+      STORAGE_SPACE: '${STORAGE_SPACE:-75}'
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  # camb-log-service:
+  #   image: amir20/dozzle:latest
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   ports:
+  #     - 8080:8080

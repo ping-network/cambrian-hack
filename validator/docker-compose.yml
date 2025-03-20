@@ -1,0 +1,49 @@
+services:
+  camb-operator:
+    image: ghcr.io/cambrianone/camb-operator:${IMAGE_TAG:-latest}
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+    environment:
+      AVS_URL: '${AVS_URL:-http://host.docker.internal:3000}'
+      AVS_WS_URL: '${AVS_WS_URL:-ws://host.docker.internal:3001}'
+      API_URL: '${API_URL:-https://api.devnet.solana.com}'
+      API_WS_URL: '${API_URL:-wss://api.devnet.solana.com}'
+      LOG_LEVEL: '${LOG_LEVEL}'
+      VOTER_KEY: '${VOTER_KEY:}'
+      ADMIN_KEY: '${ADMIN_KEY:}'
+      NCN_PUBLIC_KEY: '${NCN_PUBLIC_KEY:-2pS3w59nrwCj71wArhjsGP5rUff61rUbeGQiimNJfQGP}'
+      VAULT_PUBLIC_KEY: '${VAULT_PUBLIC_KEY:-5RZqs2PJRqdyqFc6vpykNCJP3M1yJYtHnmFChRpdM2iN}'
+      STORAGE_SPACE: '${STORAGE_SPACE:-75}'
+      PROPOSAL_STORAGE_KEY: '${PROPOSAL_STORAGE_KEY:-ping.storage}'
+
+      OPERATOR_PUBLIC_KEY: '${OPERATOR_PUBLIC_KEY:-DFTHqW9Mf2ATCbSVKNtFdr1QhZRX4KmEPHfZgzsDdPkm}'
+      ORACLE_TYPE: '${ORACLE_TYPE:-container-stream}'
+      ORACLE_ARGS: '${ORACLE_ARGS:-}'
+      ORACLE_CONTAINER_IMAGE: '${ORACLE_CONTAINER_IMAGE:-oracle-update-current-date}'
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Ping validator service
+  ping-validator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${VALIDATOR_PORT:-8080}:8080"
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8080"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
+      SOLANA_RPC_URL: "${API_URL:-https://api.devnet.solana.com}"
+      SOLANA_WS_URL: "${API_WS_URL:-wss://api.devnet.solana.com}"
+      VOTER_KEY: "${VOTER_KEY}"
+      OPERATOR_KEY: "${OPERATOR_KEY}"
+      VALIDATOR_NAME: "Ping Validator"
+    depends_on:
+      - camb-operator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
