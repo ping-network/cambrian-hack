@@ -13,10 +13,10 @@
     "validator": {
         "name": "Ping Validator",
         "version": "0.1.0",
-        "operator_address": "DFTHqW9Mf2ATCbSVKNtFdr1QhZRX4KmEPHfZgzsDdPkm",
-        "voter_address": "36q1ncLzbBGD1YUKGEHY4GUy74p4rYZuq9KGxcYQqW4Y",
-        "vault_ticket": "C7Gm8vETLnD3EUmop24sLariNsxAdFXCLMhpMuUT79RH",
-        "delegation": "5avZvL4tjTJVjz4KcHLJayVEBKJ2TEjEMzyqvteFRxkz"
+        "operator_address": "YOUR_OPERATOR_ADDRESS",
+        "voter_address": "YOUR_VOTER_ADDRESS",
+        "vault_ticket": "YOUR_VAULT_TICKET",
+        "delegation": "YOUR_DELEGATION_ADDRESS"
     },
     "ping": {
         "api_url": "https://api.pingnet.org/validator/v1"

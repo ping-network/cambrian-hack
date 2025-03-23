@@ -36,6 +36,7 @@ pub struct ValidatorStatus {
 }
 
 /// Status service that tracks the validator's status
+#[derive(Clone)]
 pub struct StatusService {
     config: ValidatorConfig,
     status: Arc<RwLock<ValidatorStatus>>,
@@ -80,38 +81,56 @@ impl StatusService {
     
     /// Updates the validator status with the latest information
     pub async fn update_status(&self) {
-        let rpc_client = RpcClient::new_with_commitment(
-            self.config.solana.rpc_url.clone(),
-            CommitmentConfig::confirmed(),
-        );
-        
         // Update uptime
         let uptime = SystemTime::now()
             .duration_since(self.start_time)
             .unwrap_or(Duration::from_secs(0));
             
-        let mut status = self.status.write().unwrap();
-        status.uptime = uptime;
+        // Update uptime immediately without holding the lock during the RPC call
+        {
+            let mut status = self.status.write().unwrap();
+            status.uptime = uptime;
+        } // RwLockWriteGuard is dropped here
         
-        // Check Solana connection status
-        match rpc_client.get_epoch_info() {
-            Ok(epoch_info) => {
+        // Use a clone of the config for the blocking task
+        let rpc_url = self.config.solana.rpc_url.clone();
+        
+        // Execute Solana RPC call in a blocking task to avoid runtime panic
+        let epoch_result = tokio::task::spawn_blocking(move || {
+            let rpc_client = RpcClient::new_with_commitment(
+                rpc_url,
+                CommitmentConfig::confirmed(),
+            );
+            rpc_client.get_epoch_info()
+        }).await;
+        
+        // Now update the status with the results
+        let mut status = self.status.write().unwrap();
+        
+        match epoch_result {
+            Ok(Ok(epoch_info)) => {
                 status.solana_status = SolanaStatus::Connected;
                 status.epoch = Some(epoch_info.epoch);
-                status.slot = Some(epoch_info.slot);
+                status.slot = Some(epoch_info.absolute_slot);
                 
                 // In a real implementation, you would get the last vote information
                 // from the validator's vote account. For this example, we'll use current time.
                 status.last_vote = Some(Utc::now());
                 
                 info!("Updated validator status: connected to Solana at epoch {} slot {}", 
-                      epoch_info.epoch, epoch_info.slot);
+                      epoch_info.epoch, epoch_info.absolute_slot);
             },
-            Err(e) => {
+            Ok(Err(e)) => {
                 status.solana_status = SolanaStatus::Disconnected { 
                     reason: e.to_string() 
                 };
                 error!("Failed to connect to Solana: {}", e);
+            },
+            Err(e) => {
+                status.solana_status = SolanaStatus::Disconnected { 
+                    reason: format!("Task error: {}", e) 
+                };
+                error!("Task error when connecting to Solana: {}", e);
             }
         }
     }
@@ -132,20 +151,18 @@ pub async fn get_status(status_service: web::Data<StatusService>) -> impl Respon
 /// Factory function for the web Data<StatusService>
 pub fn get_status_service(config: ValidatorConfig) -> web::Data<StatusService> {
     let service = StatusService::new(config);
+    let service_clone = service.clone();
     
-    // Update status once initially
+    // Update status once initially and start background task
     tokio::spawn(async move {
-        let service_clone = &service;
         service_clone.update_status().await;
         
         // Start background task to update status periodically
-        tokio::spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs(30));
-            loop {
-                interval.tick().await;
-                service_clone.update_status().await;
-            }
-        });
+        let mut interval = tokio::time::interval(Duration::from_secs(30));
+        loop {
+            interval.tick().await;
+            service_clone.update_status().await;
+        }
     });
     
     web::Data::new(service)

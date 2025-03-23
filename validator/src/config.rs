@@ -1,6 +1,5 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::net::IpAddr;
 use std::path::Path;
 use std::fs;
 use std::env;
@@ -10,6 +9,7 @@ pub struct ValidatorConfig {
     pub server: ServerConfig,
     pub solana: SolanaConfig,
     pub validator: ValidatorDetails,
+    pub ping: PingConfig,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,6 +37,11 @@ pub struct ValidatorDetails {
     pub delegation: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PingConfig {
+    pub api_url: String,
+}
+
 impl Default for ValidatorConfig {
     fn default() -> Self {
         Self {
@@ -58,6 +63,9 @@ impl Default for ValidatorConfig {
                 voter_address: "36q1ncLzbBGD1YUKGEHY4GUy74p4rYZuq9KGxcYQqW4Y".to_string(),
                 vault_ticket: "C7Gm8vETLnD3EUmop24sLariNsxAdFXCLMhpMuUT79RH".to_string(),
                 delegation: "5avZvL4tjTJVjz4KcHLJayVEBKJ2TEjEMzyqvteFRxkz".to_string(),
+            },
+            ping: PingConfig {
+                api_url: "https://api.pingnet.org/validator/v1".to_string(),
             },
         }
     }
@@ -113,6 +121,10 @@ impl ValidatorConfig {
         
         if let Ok(name) = env::var("VALIDATOR_NAME") {
             self.validator.name = name;
+        }
+        
+        if let Ok(api_url) = env::var("PING_API_URL") {
+            self.ping.api_url = api_url;
         }
     }
 } 

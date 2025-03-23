@@ -5,6 +5,8 @@ edition = "2021"
 description = "Ping Validator service for the Cambrian Platform integration"
 authors = ["Ping Network"]
 
+[workspace]
+
 [dependencies]
 actix-web = "4.4.0"
 serde = { version = "1.0", features = ["derive"] }

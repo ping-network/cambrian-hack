@@ -10,9 +10,9 @@ services:
       AVS_WS_URL: '${AVS_WS_URL:-ws://host.docker.internal:3001}'
       API_URL: '${API_URL:-https://api.devnet.solana.com}'
       API_WS_URL: '${API_URL:-wss://api.devnet.solana.com}'
-      LOG_LEVEL: '${LOG_LEVEL}'
-      VOTER_KEY: '${VOTER_KEY:}'
-      ADMIN_KEY: '${ADMIN_KEY:}'
+      LOG_LEVEL: '${LOG_LEVEL:-info}'
+      VOTER_KEY: '${VOTER_KEY}'
+      ADMIN_KEY: '${ADMIN_KEY}'
       NCN_PUBLIC_KEY: '${NCN_PUBLIC_KEY:-2pS3w59nrwCj71wArhjsGP5rUff61rUbeGQiimNJfQGP}'
       VAULT_PUBLIC_KEY: '${VAULT_PUBLIC_KEY:-5RZqs2PJRqdyqFc6vpykNCJP3M1yJYtHnmFChRpdM2iN}'
       STORAGE_SPACE: '${STORAGE_SPACE:-75}'
@@ -42,7 +42,7 @@ services:
       SOLANA_WS_URL: "${API_WS_URL:-wss://api.devnet.solana.com}"
       VOTER_KEY: "${VOTER_KEY}"
       OPERATOR_KEY: "${OPERATOR_KEY}"
-      VALIDATOR_NAME: "Ping Validator"
+      VALIDATOR_NAME: "Ping Genesis Validator"
     depends_on:
       - camb-operator
     extra_hosts:
